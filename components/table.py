@@ -107,7 +107,7 @@ def prompt_eval_table(prompt, on_select_rating: Callable | None = None):
               text_align="center",
             )
           ):
-            me.text(content)
+            me.text(str(content))
         else:
           with me.box(
             style=me.Style(

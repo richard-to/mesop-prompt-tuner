@@ -271,7 +271,7 @@ def app():
       with me.box(style=me.Style(grid_column="1 / -2")):
         prompt = _find_prompt(state.prompts, state.version)
         if prompt:
-          mex.prompt_eval_table(prompt)
+          mex.prompt_eval_table(prompt, on_select_rating=on_select_rating)
 
     with mex.icon_sidebar():
       if state.mode == "Prompt":
@@ -439,21 +439,28 @@ def on_click_generate_prompt(e: me.ClickEvent):
 
 
 def on_click_generate_variables(e: me.ClickEvent):
-  """Generates values for the given empty variables.
-
-  TODO: Implement this logic.
-  """
+  """Generates values for the given empty variables."""
   state = me.state(State)
   variable_names = set(_parse_variables(state.prompt))
+  generated_variables = llm.generate_variables(
+    state.prompt, variable_names, state.model, state.model_temperature
+  )
   for name, value in state.prompt_variables.items():
-    if name in variable_names and not value:
-      state.prompt_variables[name] = "Generate variable " + name
+    if name in variable_names and name in generated_variables:
+      state.prompt_variables[name] = generated_variables[name]
 
 
 def on_click_mode_toggle(e: me.ClickEvent):
   """Toggle between Prompt and Eval modes."""
   state = me.state(State)
   state.mode = "Eval" if state.mode == "Prompt" else "Prompt"
+
+
+def on_select_rating(e: me.SelectSelectionChangeEvent):
+  state = me.state(State)
+  _, prompt_version, response_index = e.key.split("_")
+  prompt = _find_prompt(state.prompts, int(prompt_version))
+  prompt.responses[int(response_index)]["rating"] = e.value
 
 
 # Generic event handlers

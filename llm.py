@@ -1,3 +1,4 @@
+import json
 import os
 
 import google.generativeai as genai
@@ -17,6 +18,23 @@ Write a detailed prompt to help complete the between <task></task> block.
 
 For custom user input, you can leave placeholder variables. For example, if you have
 variable named EMAIL, it would like {{{{EMAIL}}}} in the resulting prompt.
+""".strip()
+
+_GENERATE_VARIABLES_PROMPT = """
+Your job is to generate data for the given placeholders: {placeholders}.
+
+The generated data should reflect the name of the placeholder.
+
+Render the output as JSON.
+
+Here is an example output for these placeholders: STORY, FEEDBACK_TYPE
+
+{{
+  "STORY": "Generated data for a story",
+  "FEEDBACK_TYPE": "Type of feedback to provide on the story"
+}}
+
+Again, please generate outputs for these placeholders: {placeholders}
 """.strip()
 
 
@@ -39,10 +57,17 @@ def generate_prompt(task_description: str, model_name: str, temperature: float) 
 
 
 def generate_variables(
-  prompt: str, variables: dict[str, str], model_name: str, temperature: float
+  prompt: str, variable_names: list[str], model_name: str, temperature: float
 ) -> dict[str, str]:
-  # model = _make_model(model_name, temperature)
-  pass
+  model = _make_model(model_name, temperature)
+  output = (
+    model.generate_content(
+      _GENERATE_VARIABLES_PROMPT.format(placeholders=", ".join(variable_names))
+    )
+    .text.removeprefix("```json")
+    .removesuffix("```")
+  )
+  return json.loads(output)
 
 
 def run_prompt(prompt_with_variables: str, model_name: str, temperature: float) -> str:

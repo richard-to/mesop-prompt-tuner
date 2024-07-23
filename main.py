@@ -71,7 +71,9 @@ class State:
   mode: str = "Prompt"
 
 
-@me.page()
+@me.page(
+  security_policy=me.SecurityPolicy(allowed_iframe_parents=["https://huggingface.co"]),
+)
 def app():
   state = me.state(State)
 

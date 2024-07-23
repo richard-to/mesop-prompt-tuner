@@ -1,2 +1,3 @@
 gunicorn
 mesop
+google-generativeai

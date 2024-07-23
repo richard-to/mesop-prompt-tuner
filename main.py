@@ -4,6 +4,7 @@ import re
 import mesop as me
 
 import components as mex
+import llm
 
 _DIALOG_INPUT_WIDTH = 350
 
@@ -258,12 +259,12 @@ def app():
             key="dialog_show_generate_prompt",
           )
 
-      with me.box(style=me.Style(padding=me.Padding.all(15))):
+      with me.box(style=me.Style(padding=me.Padding.all(15), overflow_y="scroll")):
         if state.response:
-          with mex.card(title="Response", style=me.Style(height="100%")):
+          with mex.card(title="Response", style=me.Style(overflow_y="hidden")):
             me.markdown(state.response)
         else:
-          with mex.card(title="Prompt Tuner Instructions", style=me.Style(height="100%")):
+          with mex.card(title="Prompt Tuner Instructions"):
             me.markdown(_INSTRUCTIONS)
     else:
       # Render eval page
@@ -306,6 +307,13 @@ def on_click_system_instructions_header(e: me.ClickEvent):
 
 
 def on_click_run(e: me.ClickEvent):
+  """Runs the prompt with the given variables.
+
+  A new version of the prompt will be created if the prompt, system instructions, or
+  model settings have changed.
+
+  A new response will be added if the variables have been updated.
+  """
   state = me.state(State)
   num_versions = len(state.prompts)
   if state.version:
@@ -314,7 +322,9 @@ def on_click_run(e: me.ClickEvent):
     current_prompt_meta = Prompt()
 
   variable_names = set(_parse_variables(state.prompt))
-  prompt_variables = {k: v for k, v in state.prompt_variables.items() if k in variable_names}
+  prompt_variables = {
+    name: value for name, value in state.prompt_variables.items() if name in variable_names
+  }
 
   if (
     current_prompt_meta.prompt != state.prompt
@@ -336,9 +346,9 @@ def on_click_run(e: me.ClickEvent):
     state.version = new_version
 
   prompt = state.prompt
-  for k, v in prompt_variables.items():
-    prompt = prompt.replace("{{" + k + "}}", v)
-  state.response = "Version v" + str(state.version) + "\n\n" + prompt
+  for name, value in prompt_variables.items():
+    prompt = prompt.replace("{{" + name + "}}", value)
+  state.response = llm.run_prompt(prompt, state.model, state.model_temperature)
   state.prompts[-1].responses.append(dict(output=state.response, variables=prompt_variables))
 
 
@@ -420,12 +430,11 @@ def on_select_version(e: me.SelectSelectionChangeEvent):
 
 
 def on_click_generate_prompt(e: me.ClickEvent):
-  """Generates an improved prompt based on the given task description and closes dialog.
-
-  TODO: Implement this logic.
-  """
+  """Generates an improved prompt based on the given task description and closes dialog."""
   state = me.state(State)
-  state.prompt = state.prompt_gen_task_description + " Improve prompt stuff here"
+  state.prompt = llm.generate_prompt(
+    state.prompt_gen_task_description, state.model, state.model_temperature
+  )
   state.dialog_show_generate_prompt = False
 
 
@@ -476,7 +485,7 @@ def _parse_variables(prompt: str) -> list[str]:
 
 
 def _find_prompt(prompts: list[Prompt], version: int) -> Prompt:
-  # We don't expected too many versions, so we'll just loop through the list to find the
+  # We don't expect too many versions, so we'll just loop through the list to find the
   # right version.
   for prompt in prompts:
     if prompt.version == version:

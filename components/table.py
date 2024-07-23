@@ -54,13 +54,13 @@ def prompt_eval_table(prompt):
           me.text(header_text)
 
     # Render the data rows by going through the prompt responses.
-    for index, example in enumerate(prompt.responses):
+    for row_index, example in enumerate(prompt.responses):
       content_row = (
-        [index]
+        [row_index]
         + [example["variables"][v] for v in prompt.variables]
         + [example["output"], example.get("rating", "")]
       )
-      for row in content_row:
+      for col_index, row in enumerate(content_row):
         with me.box(
           style=me.Style(
             background="#fff",
@@ -69,4 +69,7 @@ def prompt_eval_table(prompt):
             padding=me.Padding.all(10),
           )
         ):
-          me.text(row)
+          if col_index == 0 or not row:
+            me.text(row)
+          else:
+            me.markdown(row)

@@ -437,6 +437,11 @@ def on_click_generate_prompt(e: me.ClickEvent):
   state.prompt = llm.generate_prompt(
     state.prompt_gen_task_description, state.model, state.model_temperature
   )
+  variable_names = _parse_variables(state.prompt)
+  for variable_name in variable_names:
+    if variable_name not in state.prompt_variables:
+      state.prompt_variables[variable_name] = ""
+
   state.dialog_show_generate_prompt = False
 
 
@@ -447,7 +452,7 @@ def on_click_generate_variables(e: me.ClickEvent):
   generated_variables = llm.generate_variables(
     state.prompt, variable_names, state.model, state.model_temperature
   )
-  for name, value in state.prompt_variables.items():
+  for name in state.prompt_variables:
     if name in variable_names and name in generated_variables:
       state.prompt_variables[name] = generated_variables[name]
 

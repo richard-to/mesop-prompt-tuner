@@ -14,6 +14,7 @@ def icon_sidebar():
     style=me.Style(
       background="#F5F8FC",
       border=me.Border.symmetric(horizontal=me.BorderSide(width=1, style="solid", color="#DEE2E6")),
+      height="100%",
     )
   ):
     me.slot()

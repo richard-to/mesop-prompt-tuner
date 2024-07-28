@@ -1,15 +1,13 @@
-from dataclasses import dataclass, field
-import re
-
 import mesop as me
 
 import components as mex
+import dialogs
+import handlers
 import llm
-
-_DIALOG_INPUT_WIDTH = 350
-
-_MODEL_TEMPERATURE_MAX = 2
-_MODEL_TEMPERATURE_MIN = 0
+from eval_table import prompt_eval_table
+from tool_sidebar import tool_sidebar
+from helpers import find_prompt, parse_variables
+from state import State, Prompt
 
 _INSTRUCTIONS = """
 - Write your prompt.
@@ -21,55 +19,6 @@ _INSTRUCTIONS = """
   new version of your prompt.
 """.strip()
 
-_RE_VARIABLES = re.compile(r"\{\{(\w+)\}\}")
-
-
-@dataclass
-class Prompt:
-  prompt: str = ""
-  model: str = ""
-  model_temperature: float = 0.0
-  system_instructions: str = ""
-  version: int = 0
-  variables: list[str] = field(default_factory=lambda: [])
-  # Storing the responses as a dict to workaround bug with lists
-  # of nested dataclass.
-  responses: list[dict] = field(default_factory=lambda: [])
-
-
-@me.stateclass
-class State:
-  # Main UI variables
-  system_prompt_card_expanded: bool = False
-  title: str = "Untitled Prompt"
-  temp_title: str
-  system_instructions: str
-  prompt: str
-  response: str
-  version: int = 0
-
-  # Prompt variables
-  prompt_variables: dict[str, str]
-
-  # Model info
-  model: str = "gemini-1.5-flash"
-  model_temperature: float = 1.0
-  model_temperature_input: str = "1.0"
-
-  # Dialogs
-  dialog_show_title: bool = False
-  dialog_show_model_settings: bool = False
-  dialog_show_prompt_variables: bool = False
-  dialog_show_generate_prompt: bool = False
-  dialog_show_version_history: bool = False
-  prompts: list[Prompt]
-
-  # LLM Generate functionality
-  prompt_gen_task_description: str
-
-  # Valid modes: Prompt or Eval
-  mode: str = "Prompt"
-
 
 @me.page(
   security_policy=me.SecurityPolicy(allowed_iframe_parents=["https://huggingface.co"]),
@@ -77,114 +26,13 @@ class State:
 def app():
   state = me.state(State)
 
-  # Update prompt title dialog
-  with mex.dialog(state.dialog_show_title):
-    me.text("Update Prompt Title", type="headline-6")
-    me.input(
-      label="Title",
-      value=state.temp_title,
-      on_blur=on_update_input,
-      key="temp_title",
-      style=me.Style(width=_DIALOG_INPUT_WIDTH),
-    )
-    with mex.dialog_actions():
-      me.button("Cancel", on_click=on_close_dialog, key="dialog_show_title")
-      me.button("Save", type="flat", disabled=not state.temp_title.strip(), on_click=on_save_title)
-
-  # Dialog for controlling Model settings
-  with mex.dialog(state.dialog_show_model_settings):
-    me.text("Model Settings", type="headline-6")
-    with me.box():
-      me.select(
-        label="Model",
-        key="model",
-        options=[
-          me.SelectOption(label="Gemini 1.5 Flash", value="gemini-1.5-flash"),
-          me.SelectOption(label="Gemini 1.5 Pro", value="gemini-1.5-pro"),
-        ],
-        value=state.model,
-        style=me.Style(width=_DIALOG_INPUT_WIDTH),
-        on_selection_change=on_update_input,
-      )
-    with me.box():
-      me.text("Temperature", style=me.Style(font_weight="bold"))
-      with me.box(style=me.Style(display="flex", gap=10, width=_DIALOG_INPUT_WIDTH)):
-        me.slider(
-          min=_MODEL_TEMPERATURE_MIN,
-          max=_MODEL_TEMPERATURE_MAX,
-          step=0.1,
-          style=me.Style(width=260),
-          on_value_change=on_slider_temperature,
-          value=state.model_temperature,
-        )
-        me.input(
-          value=state.model_temperature_input,
-          on_input=on_input_temperature,
-          style=me.Style(width=60),
-        )
-
-    with mex.dialog_actions():
-      me.button(
-        "Close",
-        key="dialog_show_model_settings",
-        on_click=on_close_dialog,
-      )
-
-  # Dialog for setting variables
-  with mex.dialog(state.dialog_show_prompt_variables):
-    me.text("Prompt Variables", type="headline-6")
-    if not state.prompt_variables:
-      me.text("No variables defined in prompt.", style=me.Style(width=_DIALOG_INPUT_WIDTH))
-    else:
-      with me.box(
-        style=me.Style(display="flex", justify_content="end", margin=me.Margin(bottom=15))
-      ):
-        me.button("Generate", type="flat", on_click=on_click_generate_variables)
-      variable_names = set(_parse_variables(state.prompt))
-      with me.box(style=me.Style(display="flex", flex_direction="column")):
-        for name, value in state.prompt_variables.items():
-          if name not in variable_names:
-            continue
-          me.textarea(
-            label=name,
-            value=value,
-            on_blur=on_input_variable,
-            style=me.Style(width=_DIALOG_INPUT_WIDTH),
-            key=name,
-          )
-
-    with mex.dialog_actions():
-      me.button("Close", on_click=on_close_dialog, key="dialog_show_prompt_variables")
-
-  # Dialog for showing prompt version history
-  with mex.dialog(state.dialog_show_version_history):
-    me.text("Version history", type="headline-6")
-    me.select(
-      label="Select Version",
-      options=[
-        me.SelectOption(label=f"v{prompt.version}", value=str(prompt.version))
-        for prompt in state.prompts
-      ],
-      style=me.Style(width=_DIALOG_INPUT_WIDTH),
-      on_selection_change=on_select_version,
-    )
-    with mex.dialog_actions():
-      me.button("Close", key="dialog_show_version_history", on_click=on_close_dialog)
-
-  # Dialog for generating a prompt with LLM assistance
-  # TODO: Integrate with LLM
-  with mex.dialog(state.dialog_show_generate_prompt):
-    me.text("Generate Prompt", type="headline-6")
-    me.textarea(
-      label="Describe your task",
-      value=state.prompt_gen_task_description,
-      on_blur=on_update_input,
-      key="prompt_gen_task_description",
-      style=me.Style(width=_DIALOG_INPUT_WIDTH),
-    )
-    with mex.dialog_actions():
-      me.button("Close", key="dialog_show_generate_prompt", on_click=on_close_dialog)
-      me.button("Generate", type="flat", on_click=on_click_generate_prompt)
+  dialogs.update_title()
+  dialogs.model_settings()
+  dialogs.prompt_variables()
+  dialogs.prompt_version_history()
+  dialogs.add_comparisons()
+  dialogs.generate_prompt()
+  dialogs.load_prompt()
 
   with me.box(
     style=me.Style(
@@ -226,7 +74,7 @@ def app():
             min_rows=2,
             placeholder="Optional tone and style instructions for the model",
             value=state.system_instructions,
-            on_blur=on_update_input,
+            on_blur=handlers.on_update_input,
             style=_STYLE_INVISIBLE_TEXTAREA,
             key="system_instructions",
           )
@@ -257,7 +105,7 @@ def app():
             "Generate prompt",
             disabled=bool(state.prompt),
             style=me.Style(background="#EBF1FD", border_radius="10"),
-            on_click=on_open_dialog,
+            on_click=handlers.on_open_dialog,
             key="dialog_show_generate_prompt",
           )
 
@@ -270,33 +118,16 @@ def app():
             me.markdown(_INSTRUCTIONS)
     else:
       # Render eval page
-      with me.box(style=me.Style(grid_column="1 / -2")):
-        prompt = _find_prompt(state.prompts, state.version)
+      with me.box(style=me.Style(grid_column="1 / -2", overflow_y="scroll")):
+        prompt = find_prompt(state.prompts, state.version)
         if prompt:
-          mex.prompt_eval_table(prompt, on_select_rating=on_select_rating)
+          with me.box(style=me.Style(margin=me.Margin.all(15))):
+            compare_prompts = [
+              prompt for prompt in state.prompts if prompt.version in state.comparisons
+            ]
+            prompt_eval_table([prompt] + compare_prompts, on_select_rating=on_select_rating)
 
-    with mex.icon_sidebar():
-      if state.mode == "Prompt":
-        mex.icon_menu_item(
-          icon="tune",
-          tooltip="Model settings",
-          key="dialog_show_model_settings",
-          on_click=on_open_dialog,
-        )
-        mex.icon_menu_item(
-          icon="data_object",
-          tooltip="Set variables",
-          key="dialog_show_prompt_variables",
-          on_click=on_open_dialog,
-        )
-      mex.icon_menu_item(
-        icon="history",
-        tooltip="Version history",
-        key="dialog_show_version_history",
-        on_click=on_open_dialog,
-      )
-      if state.mode == "Prompt":
-        mex.icon_menu_item(icon="code", tooltip="Get code")
+    tool_sidebar()
 
 
 # Event handlers
@@ -323,7 +154,7 @@ def on_click_run(e: me.ClickEvent):
   else:
     current_prompt_meta = Prompt()
 
-  variable_names = set(_parse_variables(state.prompt))
+  variable_names = set(parse_variables(state.prompt))
   prompt_variables = {
     name: value for name, value in state.prompt_variables.items() if name in variable_names
   }
@@ -369,92 +200,10 @@ def on_update_prompt(e: me.InputBlurEvent):
   """
   state = me.state(State)
   state.prompt = e.value.strip()
-  variable_names = _parse_variables(state.prompt)
+  variable_names = parse_variables(state.prompt)
   for variable_name in variable_names:
     if variable_name not in state.prompt_variables:
       state.prompt_variables[variable_name] = ""
-
-
-def on_save_title(e: me.InputBlurEvent):
-  """Saves the title and closes the dialog."""
-  state = me.state(State)
-  if state.temp_title:
-    state.title = state.temp_title
-    state.dialog_show_title = False
-
-
-def on_slider_temperature(e: me.SliderValueChangeEvent):
-  """Adjust temperature slider value."""
-  state = me.state(State)
-  state.model_temperature = float(e.value)
-  state.model_temperature_input = str(state.model_temperature)
-
-
-def on_input_temperature(e: me.InputEvent):
-  """Adjust temperature slider value by input."""
-  state = me.state(State)
-  try:
-    model_temperature = float(e.value)
-    if _MODEL_TEMPERATURE_MIN <= model_temperature <= _MODEL_TEMPERATURE_MAX:
-      state.model_temperature = model_temperature
-  except ValueError:
-    pass
-
-
-def on_input_variable(e: me.InputBlurEvent):
-  """Generic event to save input variables.
-
-  TODO: Probably should prefix the key to avoid key collisions.
-  """
-  state = me.state(State)
-  state.prompt_variables[e.key] = e.value
-
-
-def on_select_version(e: me.SelectSelectionChangeEvent):
-  """Update UI to show the selected prompt version and close the dialog."""
-  state = me.state(State)
-  selected_version = int(e.value)
-  prompt = _find_prompt(state.prompts, selected_version)
-  if prompt != Prompt():
-    state.prompt = prompt.prompt
-    state.version = prompt.version
-    state.system_instructions = prompt.system_instructions
-    state.model = prompt.model
-    state.model_temperature = prompt.model_temperature
-    state.model_temperature_input = str(prompt.model_temperature)
-    # If there is an existing response, select the most recent one.
-    if prompt.responses:
-      state.prompt_variables = prompt.responses[-1]["variables"]
-      state.response = prompt.responses[-1]["output"]
-    else:
-      state.response = ""
-    state.dialog_show_version_history = False
-
-
-def on_click_generate_prompt(e: me.ClickEvent):
-  """Generates an improved prompt based on the given task description and closes dialog."""
-  state = me.state(State)
-  state.prompt = llm.generate_prompt(
-    state.prompt_gen_task_description, state.model, state.model_temperature
-  )
-  variable_names = _parse_variables(state.prompt)
-  for variable_name in variable_names:
-    if variable_name not in state.prompt_variables:
-      state.prompt_variables[variable_name] = ""
-
-  state.dialog_show_generate_prompt = False
-
-
-def on_click_generate_variables(e: me.ClickEvent):
-  """Generates values for the given empty variables."""
-  state = me.state(State)
-  variable_names = set(_parse_variables(state.prompt))
-  generated_variables = llm.generate_variables(
-    state.prompt, variable_names, state.model, state.model_temperature
-  )
-  for name in state.prompt_variables:
-    if name in variable_names and name in generated_variables:
-      state.prompt_variables[name] = generated_variables[name]
 
 
 def on_click_mode_toggle(e: me.ClickEvent):
@@ -466,45 +215,8 @@ def on_click_mode_toggle(e: me.ClickEvent):
 def on_select_rating(e: me.SelectSelectionChangeEvent):
   state = me.state(State)
   _, prompt_version, response_index = e.key.split("_")
-  prompt = _find_prompt(state.prompts, int(prompt_version))
+  prompt = find_prompt(state.prompts, int(prompt_version))
   prompt.responses[int(response_index)]["rating"] = e.value
-
-
-# Generic event handlers
-
-
-def on_open_dialog(e: me.ClickEvent):
-  """Generic event to open a dialog."""
-  state = me.state(State)
-  setattr(state, e.key, True)
-
-
-def on_close_dialog(e: me.ClickEvent):
-  """Generic event to close a dialog."""
-  state = me.state(State)
-  setattr(state, e.key, False)
-
-
-def on_update_input(e: me.InputBlurEvent | me.SelectSelectionChangeEvent):
-  """Generic event to update input/select values."""
-  state = me.state(State)
-  setattr(state, e.key, e.value)
-
-
-# Helper functions
-
-
-def _parse_variables(prompt: str) -> list[str]:
-  return _RE_VARIABLES.findall(prompt)
-
-
-def _find_prompt(prompts: list[Prompt], version: int) -> Prompt:
-  # We don't expect too many versions, so we'll just loop through the list to find the
-  # right version.
-  for prompt in prompts:
-    if prompt.version == version:
-      return prompt
-  return Prompt()
 
 
 # Style helpers

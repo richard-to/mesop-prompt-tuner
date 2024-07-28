@@ -9,5 +9,9 @@ app_port: 8080
 
 # Mesop Prompt Tuner
 
-Prompt tuner UI built using [Mesop](https://google.github.io/mesop/). This is a
-work in progress.
+_This is a work in progress._
+
+This app is built using [Mesop](https://google.github.io/mesop/). The UI/UX is
+heavily inspired by the Anthropic Console Workbench.
+
+You can test out the WIP demo on [Hugging Face Spaces](https://huggingface.co/spaces/richard-to/mesop-prompt-tuner).

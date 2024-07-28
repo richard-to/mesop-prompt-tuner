@@ -9,7 +9,6 @@ from state import State
 @me.component
 def update_title():
   state = me.state(State)
-  # Update prompt title dialog
   with mex.dialog(state.dialog_show_title):
     me.text("Update Prompt Title", type="headline-6")
     me.input(

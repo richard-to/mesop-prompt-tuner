@@ -69,7 +69,7 @@ def prompt_eval_table(prompts: list[Prompt], on_select_rating: Callable | None =
                   me.SelectOption(label="5", value="5"),
                 ],
                 on_selection_change=on_select_rating,
-                key=f"rating_{row["prompt"].version}_{prompt_response[1]}",
+                key=f"rating_{row['prompt'].version}_{prompt_response[1]}",
                 style=me.Style(width=60),
               )
 

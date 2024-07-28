@@ -23,7 +23,12 @@ def prompt_version_history():
       on_selection_change=on_select_version,
     )
     with mex.dialog_actions():
-      me.button("Close", key="dialog_show_version_history", on_click=handlers.on_close_dialog)
+      me.button(
+        "Close",
+        key="dialog_show_version_history",
+        on_click=handlers.on_close_dialog,
+        style=me.Style(border_radius="10"),
+      )
 
 
 def on_select_version(e: me.SelectSelectionChangeEvent):

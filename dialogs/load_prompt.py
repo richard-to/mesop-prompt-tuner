@@ -21,10 +21,15 @@ def load_prompt():
         type="flat",
         color="primary",
         on_upload=on_upload_prompt,
-        style=me.Style(font_weight="bold"),
+        style=me.Style(font_weight="bold", border_radius=10),
       )
       with mex.dialog_actions():
-        me.button("Close", key="dialog_show_load", on_click=handlers.on_close_dialog)
+        me.button(
+          "Close",
+          key="dialog_show_load",
+          on_click=handlers.on_close_dialog,
+          style=me.Style(border_radius="10"),
+        )
 
 
 def on_upload_prompt(e: me.UploadEvent):

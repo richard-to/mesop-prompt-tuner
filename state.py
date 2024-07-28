@@ -12,9 +12,9 @@ class Prompt:
   version: int = 0
   variables: list[str] = field(default_factory=list)
   # Storing the responses as a dict to workaround bug with lists
-  # of nested dataclass.
+  # of nested dataclass. See https://github.com/google/mesop/issues/659.
   #
-  # Keys: output, variables, rating
+  # Keys: output: str, variables: dict[str, str], rating: int
   responses: list[dict] = field(default_factory=list)
 
 
@@ -31,6 +31,7 @@ class State:
 
   # Prompt variables
   prompt_variables: dict[str, str]
+  add_row_prompt_variables: dict[str, str]
 
   # Model info
   model: str = "gemini-1.5-flash"
@@ -38,13 +39,14 @@ class State:
   model_temperature_input: str = "1.0"
 
   # Dialogs
-  dialog_show_title: bool = False
+  dialog_show_add_comparison: bool = False
+  dialog_show_add_row: bool = False
+  dialog_show_generate_prompt: bool = False
+  dialog_show_load: bool = False
   dialog_show_model_settings: bool = False
   dialog_show_prompt_variables: bool = False
-  dialog_show_generate_prompt: bool = False
+  dialog_show_title: bool = False
   dialog_show_version_history: bool = False
-  dialog_show_add_comparison: bool = False
-  dialog_show_load: bool = False
 
   prompts: list[Prompt]
 
@@ -54,4 +56,9 @@ class State:
   # Valid modes: Prompt or Eval
   mode: str = "Prompt"
 
+  # Eval comparisons
   comparisons: list[int]
+
+  show_snackbar: bool = False
+  snackbar_message: str = ""
+  snackbar_duration: int = 2

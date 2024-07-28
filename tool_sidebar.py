@@ -3,6 +3,7 @@ import errno
 import json
 import os
 import re
+import time
 
 import mesop as me
 
@@ -62,9 +63,10 @@ def tool_sidebar():
 def on_click_download(e: me.ClickEvent):
   state = me.state(State)
   cleaned_title = _clean_title(state.title)
+  filename = f"prompt-{cleaned_title}.json"
   _create_directory(SAVED_PROMPT_DIRECTORY)
 
-  with open(f"{SAVED_PROMPT_DIRECTORY}/prompt-{cleaned_title}.json", "w") as outfile:
+  with open(f"{SAVED_PROMPT_DIRECTORY}/{filename}", "w") as outfile:
     output = {
       key: value
       for key, value in asdict(state).items()
@@ -80,6 +82,14 @@ def on_click_download(e: me.ClickEvent):
     }
     json.dump(output, outfile)
 
+  state.snackbar_message = f"Prompt exported as {filename}."
+  state.show_snackbar = True
+  yield
+  time.sleep(state.snackbar_duration)
+  yield
+  state.show_snackbar = False
+  yield
+
 
 def _clean_title(title: str) -> str:
   return re.sub(r"[^a-z0-9_]", "", title.lower().replace(" ", "_"))
@@ -89,7 +99,6 @@ def _create_directory(directory_path):
   """Creates a directory if it doesn't exist."""
   try:
     os.makedirs(directory_path)
-    print(f"Directory '{directory_path}' created successfully.")
   except OSError as e:
     if e.errno != errno.EEXIST:
       raise

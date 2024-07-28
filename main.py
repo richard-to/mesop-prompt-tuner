@@ -1,3 +1,5 @@
+import copy
+
 import mesop as me
 
 import components as mex
@@ -26,6 +28,10 @@ _INSTRUCTIONS = """
 def app():
   state = me.state(State)
 
+  mex.snackbar(
+    is_visible=state.show_snackbar, label=state.snackbar_message, horizontal_position="start"
+  )
+
   dialogs.update_title()
   dialogs.model_settings()
   dialogs.prompt_variables()
@@ -33,6 +39,7 @@ def app():
   dialogs.add_comparisons()
   dialogs.generate_prompt()
   dialogs.load_prompt()
+  dialogs.add_row()
 
   with me.box(
     style=me.Style(
@@ -125,8 +132,21 @@ def app():
             compare_prompts = [
               prompt for prompt in state.prompts if prompt.version in state.comparisons
             ]
-            prompt_eval_table([prompt] + compare_prompts, on_select_rating=on_select_rating)
-
+            prompt_eval_table(
+              [prompt] + compare_prompts,
+              on_select_rating=on_select_rating,
+              on_click_run=on_click_eval_run,
+            )
+            me.button(
+              label="Add row",
+              type="flat",
+              style=me.Style(
+                margin=me.Margin(top=10),
+                border_radius="10",
+              ),
+              key="dialog_show_add_row",
+              on_click=handlers.on_open_dialog,
+            )
     tool_sidebar()
 
 
@@ -137,6 +157,31 @@ def on_click_system_instructions_header(e: me.ClickEvent):
   """Open/close system instructions card."""
   state = me.state(State)
   state.system_prompt_card_expanded = not state.system_prompt_card_expanded
+
+
+def on_click_eval_run(e: me.ClickEvent):
+  state = me.state(State)
+  print(e.key)
+  _, prompt_version, response_index, selected_prompt_response_index = e.key.split("_")
+  prompt = find_prompt(state.prompts, int(prompt_version))
+  selected_prompt = find_prompt(state.prompts, state.version)
+  selected_prompt
+
+  if response_index != "-1":
+    response = prompt.responses[int(response_index)]
+  else:
+    response = {
+      "variables": copy.copy(
+        selected_prompt.responses[int(selected_prompt_response_index)]["variables"]
+      ),
+      "rating": 0,
+    }
+    prompt.responses.append(response)
+
+  prompt_text = prompt.prompt
+  for name, value in response["variables"].items():
+    prompt_text = prompt_text.replace("{{" + name + "}}", value)
+  response["output"] = llm.run_prompt(prompt_text, prompt.model, prompt.model_temperature)
 
 
 def on_click_run(e: me.ClickEvent):

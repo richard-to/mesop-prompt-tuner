@@ -5,3 +5,4 @@ from dialogs.prompt_version_history import prompt_version_history as prompt_vers
 from dialogs.add_comparisons import add_comparisons as add_comparisons
 from dialogs.generate_prompt import generate_prompt as generate_prompt
 from dialogs.load_prompt import load_prompt as load_prompt
+from dialogs.add_row import add_row as add_row

@@ -7,3 +7,4 @@ from components.header import header as header
 from components.header import header_section as header_section
 from components.sidebar import icon_sidebar as icon_sidebar
 from components.sidebar import icon_menu_item as icon_menu_item
+from components.snackbar import snackbar as snackbar

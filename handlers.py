@@ -23,5 +23,4 @@ def on_update_input(e: me.InputBlurEvent | me.InputEvent | me.InputEnterEvent):
 def on_update_selection(e: me.SelectSelectionChangeEvent):
   """Generic event to update input values."""
   state = me.state(State)
-  print("EEE", e)
   setattr(state, e.key, e.value)

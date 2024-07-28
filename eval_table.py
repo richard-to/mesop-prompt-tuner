@@ -7,7 +7,11 @@ from state import Prompt
 
 
 @me.component
-def prompt_eval_table(prompts: list[Prompt], on_select_rating: Callable | None = None):
+def prompt_eval_table(
+  prompts: list[Prompt],
+  on_select_rating: Callable | None = None,
+  on_click_run: Callable | None = None,
+):
   data = _make_table_meta(prompts)
   response_map = _make_response_map(prompts)
 
@@ -51,16 +55,31 @@ def prompt_eval_table(prompts: list[Prompt], on_select_rating: Callable | None =
         elif row["type"] == "model_response":
           with me.box(style=_MARKDOWN_BOX_STYLE):
             prompt_response = response_map[row["prompt"].version].get(response_key)
-            if prompt_response:
+            if prompt_response and prompt_response[0]["output"]:
               me.markdown(prompt_response[0]["output"])
             else:
-              me.text("")
+              with me.box(
+                style=me.Style(
+                  display="flex", height="100%", justify_content="center", align_items="center"
+                )
+              ):
+                response_index = prompt_response[1] if prompt_response else "-1"
+                _, selected_version_response_index = response_map[prompts[0].version].get(
+                  response_key
+                )
+                with me.content_button(
+                  key=f"run_{row['prompt'].version}_{response_index}_{selected_version_response_index}",
+                  on_click=on_click_run,
+                  style=me.Style(background="#EBF1FD", border_radius="10"),
+                ):
+                  with me.tooltip(message="Run prompt"):
+                    me.icon("play_arrow")
         elif row["type"] == "model_rating":
           with me.box(style=_RATING_STYLE):
             prompt_response = response_map[row["prompt"].version].get(response_key)
-            if prompt_response:
+            if prompt_response and prompt_response[0]["output"]:
               me.select(
-                value=prompt_response[0].get("rating", ""),
+                value=prompt_response[0].get("rating", 0),
                 options=[
                   me.SelectOption(label="1", value="1"),
                   me.SelectOption(label="2", value="2"),

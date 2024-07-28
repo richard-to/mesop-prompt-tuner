@@ -47,6 +47,7 @@ def model_settings():
         "Close",
         key="dialog_show_model_settings",
         on_click=handlers.on_close_dialog,
+        style=me.Style(border_radius="10"),
       )
 
 

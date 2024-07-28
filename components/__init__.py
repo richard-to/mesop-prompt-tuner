@@ -1,4 +1,5 @@
 from components.button import button_toggle as button_toggle
+from components.button import button as button
 from components.card import card as card
 from components.card import expanable_card as expanable_card
 from components.dialog import dialog as dialog

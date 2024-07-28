@@ -25,11 +25,10 @@ def add_comparisons():
       on_selection_change=on_select_comparison,
     )
     with mex.dialog_actions():
-      me.button(
+      mex.button(
         "Close",
         key="dialog_show_add_comparison",
         on_click=handlers.on_close_dialog,
-        style=me.Style(border_radius="10"),
       )
 
 

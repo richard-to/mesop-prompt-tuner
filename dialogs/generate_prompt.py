@@ -21,17 +21,15 @@ def generate_prompt():
       style=me.Style(width=DIALOG_INPUT_WIDTH),
     )
     with mex.dialog_actions():
-      me.button(
+      mex.button(
         "Close",
         key="dialog_show_generate_prompt",
         on_click=handlers.on_close_dialog,
-        style=me.Style(border_radius="10"),
       )
-      me.button(
+      mex.button(
         "Generate",
         type="flat",
         on_click=on_click_generate_prompt,
-        style=me.Style(border_radius="10"),
       )
 
 

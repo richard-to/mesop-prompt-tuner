@@ -20,10 +20,10 @@ def prompt_variables():
       with me.box(
         style=me.Style(display="flex", justify_content="end", margin=me.Margin(bottom=15))
       ):
-        me.button(
+        mex.button(
           "Generate",
           on_click=on_click_generate_variables,
-          style=me.Style(background="#EBF1FD", border_radius="10"),
+          style=me.Style(background="#EBF1FD"),
         )
       variable_names = set(parse_variables(state.prompt))
       with me.box(style=me.Style(display="flex", flex_direction="column")):
@@ -39,11 +39,10 @@ def prompt_variables():
           )
 
     with mex.dialog_actions():
-      me.button(
+      mex.button(
         "Close",
         on_click=handlers.on_close_dialog,
         key="dialog_show_prompt_variables",
-        style=me.Style(border_radius="10"),
       )
 
 

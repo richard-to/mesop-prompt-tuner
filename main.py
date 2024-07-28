@@ -108,10 +108,10 @@ def app():
           ):
             with me.tooltip(message="Run prompt"):
               me.icon("play_arrow")
-          me.button(
+          mex.button(
             "Generate prompt",
             disabled=bool(state.prompt),
-            style=me.Style(background="#EBF1FD", border_radius="10"),
+            style=me.Style(background="#EBF1FD"),
             on_click=handlers.on_open_dialog,
             key="dialog_show_generate_prompt",
           )
@@ -137,12 +137,11 @@ def app():
               on_select_rating=on_select_rating,
               on_click_run=on_click_eval_run,
             )
-            me.button(
+            mex.button(
               label="Add row",
               type="flat",
               style=me.Style(
                 margin=me.Margin(top=10),
-                border_radius="10",
               ),
               key="dialog_show_add_row",
               on_click=handlers.on_open_dialog,

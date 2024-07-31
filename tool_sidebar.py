@@ -55,9 +55,21 @@ def tool_sidebar():
     mex.icon_menu_item(
       icon="download",
       tooltip="Download prompt data",
-      key="dialog_show_download",
       on_click=on_click_download,
     )
+
+    mex.icon_menu_item(
+      icon="light_mode" if me.theme_brightness() == "dark" else "dark_mode",
+      tooltip="Switch to " + ("light mode" if me.theme_brightness() == "dark" else "dark mode"),
+      on_click=on_click_theme_brightness,
+    )
+
+
+def on_click_theme_brightness(e: me.ClickEvent):
+  if me.theme_brightness() == "light":
+    me.set_theme_mode("dark")
+  else:
+    me.set_theme_mode("light")
 
 
 def on_click_download(e: me.ClickEvent):

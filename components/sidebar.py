@@ -12,8 +12,10 @@ def icon_sidebar():
   """
   with me.box(
     style=me.Style(
-      background="#F5F8FC",
-      border=me.Border.symmetric(horizontal=me.BorderSide(width=1, style="solid", color="#DEE2E6")),
+      background=me.theme_var("surface-container"),
+      border=me.Border.symmetric(
+        horizontal=me.BorderSide(width=1, style="solid", color=me.theme_var("outline-variant"))
+      ),
       height="100%",
     )
   ):
@@ -31,7 +33,9 @@ def icon_menu_item(*, icon: str, tooltip: str, on_click: Callable | None = None,
     key=key,
     on_click=on_click,
     style=me.Style(
-      border=me.Border(bottom=me.BorderSide(width=1, color="#DEE2E6", style="solid")),
+      border=me.Border(
+        bottom=me.BorderSide(width=1, color=me.theme_var("outline-variant"), style="solid")
+      ),
       cursor="pointer",
       padding=me.Padding.all(15),
     ),

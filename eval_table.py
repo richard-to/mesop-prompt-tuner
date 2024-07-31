@@ -35,12 +35,20 @@ def prompt_eval_table(
           if avg_rating is not None:
             with me.tooltip(message="Average rating"):
               me.text(
-                f"{avg_rating:.2f}", style=me.Style(font_size=13, color="#666", text_align="center")
+                f"{avg_rating:.2f}",
+                style=me.Style(
+                  font_size=13, color=me.theme_var("on-surface-variant"), text_align="center"
+                ),
               )
         elif row["type"] == "variable":
-          me.text(row.get("header_2", ""), style=me.Style(font_size=13, color="#0063FF"))
+          me.text(
+            row.get("header_2", ""), style=me.Style(font_size=13, color=me.theme_var("primary"))
+          )
         else:
-          me.text(row.get("header_2", ""), style=me.Style(font_size=13, color="#aaa"))
+          me.text(
+            row.get("header_2", ""),
+            style=me.Style(font_size=13, color=me.theme_var("on-surface-variant")),
+          )
 
     # Render examples
     for row_index, example in enumerate(prompts[0].responses):
@@ -70,7 +78,11 @@ def prompt_eval_table(
                 with me.content_button(
                   key=f"run_{row['prompt'].version}_{response_index}_{selected_version_response_index}",
                   on_click=on_click_run,
-                  style=me.Style(background="#EBF1FD", border_radius="10"),
+                  style=me.Style(
+                    background=me.theme_var("secondary-container"),
+                    color=me.theme_var("on-secondary-container"),
+                    border_radius="10",
+                  ),
                 ):
                   with me.tooltip(message="Run prompt"):
                     me.icon("play_arrow")
@@ -159,30 +171,30 @@ def _calculate_avg_rating_from_prompt(prompt: Prompt) -> float | None:
   return None
 
 
-_BORDER_SIDE = me.BorderSide(width=1, style="solid", color="#DEE2E6")
+_BORDER_SIDE = me.BorderSide(width=1, style="solid", color=me.theme_var("outline-variant"))
 
 _HEADER_STYLE = me.Style(
-  background="#FFF",
+  background=me.theme_var("surface-container-lowest"),
   border=me.Border.all(_BORDER_SIDE),
-  color="#000",
+  color=me.theme_var("on-surface"),
   font_size=15,
   font_weight="bold",
   padding=me.Padding.all(10),
 )
 
 _INDEX_STYLE = me.Style(
-  background="#FFF",
+  background=me.theme_var("surface-container-lowest"),
   border=me.Border.all(_BORDER_SIDE),
-  color="#000",
+  color=me.theme_var("on-surface"),
   font_size=14,
   padding=me.Padding.all(10),
   text_align="center",
 )
 
 _MARKDOWN_BOX_STYLE = me.Style(
-  background="#FFF",
+  background=me.theme_var("surface-container-lowest"),
   border=me.Border.all(_BORDER_SIDE),
-  color="#000",
+  color=me.theme_var("on-surface"),
   font_size=14,
   padding=me.Padding.all(10),
   max_height=300,
@@ -191,8 +203,8 @@ _MARKDOWN_BOX_STYLE = me.Style(
 )
 
 _RATING_STYLE = me.Style(
-  background="#FFF",
+  background=me.theme_var("surface-container-lowest"),
   border=me.Border.all(_BORDER_SIDE),
-  color="#000",
+  color=me.theme_var("on-surface"),
   padding=me.Padding.all(10),
 )

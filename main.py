@@ -43,7 +43,7 @@ def app():
 
   with me.box(
     style=me.Style(
-      background="#FDFDFD",
+      background=me.theme_var("surface-container-lowest"),
       display="grid",
       grid_template_columns="50fr 50fr 1fr",
       grid_template_rows="1fr 50fr",
@@ -111,7 +111,10 @@ def app():
           mex.button(
             "Generate prompt",
             disabled=bool(state.prompt),
-            style=me.Style(background="#EBF1FD"),
+            style=me.Style(
+              background=me.theme_var("secondary-container"),
+              color=me.theme_var("on-secondary-container"),
+            ),
             on_click=handlers.on_open_dialog,
             key="dialog_show_generate_prompt",
           )
@@ -266,6 +269,8 @@ def on_select_rating(e: me.SelectSelectionChangeEvent):
 # Style helpers
 
 _STYLE_INVISIBLE_TEXTAREA = me.Style(
+  background=me.theme_var("surface-container-lowest"),
+  color=me.theme_var("on-surface"),
   overflow_y="hidden",
   width="100%",
   outline="none",

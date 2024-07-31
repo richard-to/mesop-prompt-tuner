@@ -64,7 +64,9 @@ def button_toggle(
           align_items="center",
           display="flex",
           # Handle selected case
-          background=_SELECTED_BG if label == selected else "#FFF",
+          background=_SELECTED_BG
+          if label == selected
+          else me.theme_var("surface-container-lowest"),
           padding=_SELECTED_PADDING if label == selected else _PADDING,
           cursor="default" if label == selected else "pointer",
           # Handle single button case (should just use a button in this case)
@@ -77,14 +79,14 @@ def button_toggle(
         me.text(label)
 
 
-_SELECTED_BG = "#DEE2F9"
+_SELECTED_BG = me.theme_var("primary-container")
 
 _PADDING = me.Padding(left=15, right=15, top=10, bottom=10)
 _SELECTED_PADDING = me.Padding(left=15, right=15, top=5, bottom=5)
 
 _BORDER_RADIUS = "20px"
 
-_DEFAULT_BORDER_STYLE = me.BorderSide(width=1, color="#74777E", style="solid")
+_DEFAULT_BORDER_STYLE = me.BorderSide(width=1, color=me.theme_var("outline"), style="solid")
 _BORDER = me.Border(
   left=_DEFAULT_BORDER_STYLE, top=_DEFAULT_BORDER_STYLE, bottom=_DEFAULT_BORDER_STYLE
 )

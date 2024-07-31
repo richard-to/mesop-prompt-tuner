@@ -62,9 +62,11 @@ def expanable_card(
 
 
 _DEFAULT_CARD_STYLE = me.Style(
-  background="#FFF",
+  background=me.theme_var("surface-container-lowest"),
   border_radius=10,
-  border=me.Border.all(me.BorderSide(width=1, color="#DEE2E6", style="solid")),
+  border=me.Border.all(
+    me.BorderSide(width=1, color=me.theme_var("outline-variant"), style="solid")
+  ),
   padding=me.Padding.all(15),
   margin=me.Margin(bottom=15),
 )

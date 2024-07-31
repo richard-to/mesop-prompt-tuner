@@ -23,7 +23,10 @@ def prompt_variables():
         mex.button(
           "Generate",
           on_click=on_click_generate_variables,
-          style=me.Style(background="#EBF1FD"),
+          style=me.Style(
+            background=me.theme_var("secondary-container"),
+            color=me.theme_var("on-secondary-container"),
+          ),
         )
       variable_names = set(parse_variables(state.prompt))
       with me.box(style=me.Style(display="flex", flex_direction="column")):

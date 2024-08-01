@@ -38,9 +38,12 @@ Again, please generate outputs for these placeholders: {placeholders}
 """.strip()
 
 
-def _make_model(model_name: str, temperature: float) -> genai.GenerativeModel:
+def _make_model(
+  model_name: str, system_instruction: str = "", temperature: float = 1.0
+) -> genai.GenerativeModel:
   return genai.GenerativeModel(
     model_name,
+    system_instruction=system_instruction,
     generation_config={
       "temperature": temperature,
       "top_p": 0.95,
@@ -51,7 +54,7 @@ def _make_model(model_name: str, temperature: float) -> genai.GenerativeModel:
 
 
 def generate_prompt(task_description: str, model_name: str, temperature: float) -> str:
-  model = _make_model(model_name, temperature)
+  model = _make_model(model_name, temperature=temperature)
   prompt = _GENERATE_PROMPT.format(task=task_description)
   return model.generate_content(prompt).text
 
@@ -59,7 +62,7 @@ def generate_prompt(task_description: str, model_name: str, temperature: float) 
 def generate_variables(
   prompt: str, variable_names: list[str], model_name: str, temperature: float
 ) -> dict[str, str]:
-  model = _make_model(model_name, temperature)
+  model = _make_model(model_name, temperature=temperature)
   output = (
     model.generate_content(
       _GENERATE_VARIABLES_PROMPT.format(placeholders=", ".join(variable_names))
@@ -70,6 +73,8 @@ def generate_variables(
   return json.loads(output)
 
 
-def run_prompt(prompt_with_variables: str, model_name: str, temperature: float) -> str:
-  model = _make_model(model_name, temperature)
-  return model.generate_content(prompt_with_variables).text
+def run_prompt(
+  prompt_with_variables: str, system_instruction: str, model_name: str, temperature: float
+) -> str:
+  model = _make_model(model_name, temperature=temperature, system_instruction=system_instruction)
+  return model.generate_content(prompt_with_variables, request_options={"timeout": 120}).text

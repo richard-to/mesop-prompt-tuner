@@ -163,7 +163,6 @@ def on_click_system_instructions_header(e: me.ClickEvent):
 
 def on_click_eval_run(e: me.ClickEvent):
   state = me.state(State)
-  print(e.key)
   _, prompt_version, response_index, selected_prompt_response_index = e.key.split("_")
   prompt = find_prompt(state.prompts, int(prompt_version))
   selected_prompt = find_prompt(state.prompts, state.version)
@@ -183,7 +182,9 @@ def on_click_eval_run(e: me.ClickEvent):
   prompt_text = prompt.prompt
   for name, value in response["variables"].items():
     prompt_text = prompt_text.replace("{{" + name + "}}", value)
-  response["output"] = llm.run_prompt(prompt_text, prompt.model, prompt.model_temperature)
+  response["output"] = llm.run_prompt(
+    prompt_text, prompt.system_instructions, prompt.model, prompt.model_temperature
+  )
 
 
 def on_click_run(e: me.ClickEvent):
@@ -228,7 +229,9 @@ def on_click_run(e: me.ClickEvent):
   prompt = state.prompt
   for name, value in prompt_variables.items():
     prompt = prompt.replace("{{" + name + "}}", value)
-  state.response = llm.run_prompt(prompt, state.model, state.model_temperature)
+  state.response = llm.run_prompt(
+    prompt, state.system_instructions, state.model, state.model_temperature
+  )
   state.prompts[-1].responses.append(dict(output=state.response, variables=prompt_variables))
 
 

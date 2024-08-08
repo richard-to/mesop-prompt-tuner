@@ -12,7 +12,7 @@ def markdown(text: str, has_copy_to_clipboard: bool = False):
         with copy_to_clipboard_component(text=text):
           with me.content_button(
             type="icon",
-            style=me.Style(cursor="pointer", background=me.theme_var("surface-container")),
+            style=me.Style(cursor="pointer", background=me.theme_var("surface-container-low")),
           ):
             me.icon("content_copy")
     markedjs_component(text)

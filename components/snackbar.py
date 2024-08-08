@@ -66,7 +66,8 @@ def snackbar(
           if action_label
           else me.Padding.all(15),
           pointer_events="auto",
-          width=300,
+          min_width=300,
+          max_width=500,
         )
       ):
         me.text(label, style=me.Style(color=me.theme_var("surface-container-lowest")))

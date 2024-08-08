@@ -13,7 +13,7 @@ from helpers import find_prompt, parse_variables
 from state import State, Prompt
 from web_components import AsyncAction
 from web_components import async_action_component
-from web_components import markedjs_component
+
 
 _INSTRUCTIONS = """
 - Write your prompt.
@@ -142,10 +142,10 @@ def app():
       with me.box(style=me.Style(padding=me.Padding.all(15), overflow_y="scroll")):
         if state.response:
           with mex.card(title="Response", style=me.Style(overflow_y="hidden")):
-            markedjs_component(state.response)
+            mex.markdown(state.response, has_copy_to_clipboard=True)
         else:
           with mex.card(title="Prompt Tuner Instructions"):
-            markedjs_component(_INSTRUCTIONS)
+            mex.markdown(_INSTRUCTIONS, has_copy_to_clipboard=True)
     else:
       # Render eval page
       with me.box(style=me.Style(grid_column="1 / -2", overflow_y="scroll")):

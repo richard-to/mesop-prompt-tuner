@@ -3,8 +3,8 @@ import hashlib
 
 import mesop as me
 
+import components as mex
 from state import Prompt
-from web_components import markedjs_component
 
 
 @me.component
@@ -60,12 +60,12 @@ def prompt_eval_table(
             me.text(str(row_index))
         elif row["type"] == "variable":
           with me.box(style=_MARKDOWN_BOX_STYLE):
-            markedjs_component(example["variables"][row["variable_name"]])
+            mex.markdown(example["variables"][row["variable_name"]], has_copy_to_clipboard=True)
         elif row["type"] == "model_response":
           with me.box(style=_MARKDOWN_BOX_STYLE):
             prompt_response = response_map[row["prompt"].version].get(response_key)
             if prompt_response and prompt_response[0]["output"]:
-              markedjs_component(prompt_response[0]["output"])
+              mex.markdown(prompt_response[0]["output"], has_copy_to_clipboard=True)
             else:
               with me.box(
                 style=me.Style(

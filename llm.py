@@ -43,7 +43,7 @@ def _make_model(
 ) -> genai.GenerativeModel:
   return genai.GenerativeModel(
     model_name,
-    system_instruction=system_instruction,
+    system_instruction=system_instruction if system_instruction else None,
     generation_config={
       "temperature": temperature,
       "top_p": 0.95,

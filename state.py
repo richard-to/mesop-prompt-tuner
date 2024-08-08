@@ -59,6 +59,10 @@ class State:
   # Eval comparisons
   comparisons: list[int]
 
+  # Snackbar
   show_snackbar: bool = False
   snackbar_message: str = ""
-  snackbar_duration: int = 2
+
+  # Async action (for snackbar)
+  async_action_name: str
+  async_action_duration: int = 4

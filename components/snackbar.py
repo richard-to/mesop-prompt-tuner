@@ -38,6 +38,7 @@ def snackbar(
       height="100%",
       overflow_x="auto",
       overflow_y="auto",
+      pointer_events="none",
       position="fixed",
       width="100%",
       z_index=1000,
@@ -64,6 +65,7 @@ def snackbar(
           padding=me.Padding(top=5, bottom=5, right=5, left=15)
           if action_label
           else me.Padding.all(15),
+          pointer_events="auto",
           width=300,
         )
       ):

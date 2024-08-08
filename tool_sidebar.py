@@ -96,11 +96,7 @@ def on_click_download(e: me.ClickEvent):
 
   state.snackbar_message = f"Prompt exported as {filename}."
   state.show_snackbar = True
-  yield
-  time.sleep(state.snackbar_duration)
-  yield
-  state.show_snackbar = False
-  yield
+  state.async_action_name = "hide_snackbar"
 
 
 def _clean_title(title: str) -> str:

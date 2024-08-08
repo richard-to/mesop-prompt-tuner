@@ -8,3 +8,6 @@ __pycache__
 
 # Prompt Tuner App
 saved_prompts
+
+# System
+.DS_Store

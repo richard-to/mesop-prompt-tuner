@@ -1,6 +1,7 @@
 import copy
 
 import mesop as me
+import mesop.labs as mel
 
 import components as mex
 import dialogs
@@ -10,6 +11,9 @@ from eval_table import prompt_eval_table
 from tool_sidebar import tool_sidebar
 from helpers import find_prompt, parse_variables
 from state import State, Prompt
+from web_components import AsyncAction
+from web_components import async_action_component
+from web_components import markedjs_component
 
 _INSTRUCTIONS = """
 - Write your prompt.
@@ -23,14 +27,30 @@ _INSTRUCTIONS = """
 
 
 @me.page(
-  security_policy=me.SecurityPolicy(allowed_iframe_parents=["https://huggingface.co"]),
+  stylesheets=[
+    # Other themes here: https://www.jsdelivr.com/package/npm/highlight.js?tab=files&path=styles
+    "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css",
+    "https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github.min.css",
+  ],
+  security_policy=me.SecurityPolicy(
+    allowed_script_srcs=[
+      "https://cdn.jsdelivr.net",
+    ],
+    dangerously_disable_trusted_types=True,
+    allowed_iframe_parents=["https://huggingface.co"],
+  ),
 )
 def app():
   state = me.state(State)
 
-  mex.snackbar(
-    is_visible=state.show_snackbar, label=state.snackbar_message, horizontal_position="start"
+  action = (
+    AsyncAction(value=state.async_action_name, duration_seconds=state.async_action_duration)
+    if state.async_action_name
+    else None
   )
+  async_action_component(action=action, on_finished=on_async_action_finished)
+
+  mex.snackbar(is_visible=state.show_snackbar, label=state.snackbar_message)
 
   dialogs.update_title()
   dialogs.model_settings()
@@ -122,10 +142,10 @@ def app():
       with me.box(style=me.Style(padding=me.Padding.all(15), overflow_y="scroll")):
         if state.response:
           with mex.card(title="Response", style=me.Style(overflow_y="hidden")):
-            me.markdown(state.response)
+            markedjs_component(state.response)
         else:
           with mex.card(title="Prompt Tuner Instructions"):
-            me.markdown(_INSTRUCTIONS)
+            markedjs_component(_INSTRUCTIONS)
     else:
       # Render eval page
       with me.box(style=me.Style(grid_column="1 / -2", overflow_y="scroll")):
@@ -267,6 +287,13 @@ def on_select_rating(e: me.SelectSelectionChangeEvent):
   _, prompt_version, response_index = e.key.split("_")
   prompt = find_prompt(state.prompts, int(prompt_version))
   prompt.responses[int(response_index)]["rating"] = e.value
+
+
+def on_async_action_finished(e: mel.WebEvent):
+  state = me.state(State)
+  state.async_action_name = ""
+  state.snackbar_message = ""
+  state.show_snackbar = False
 
 
 # Style helpers

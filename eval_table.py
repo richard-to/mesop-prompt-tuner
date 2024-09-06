@@ -92,7 +92,7 @@ def prompt_eval_table(
             prompt_response = response_map[row["prompt"].version].get(response_key)
             if prompt_response and prompt_response[0]["output"]:
               me.select(
-                value=prompt_response[0].get("rating", 0),
+                value=prompt_response[0].get("rating", "0"),
                 options=[
                   me.SelectOption(label="1", value="1"),
                   me.SelectOption(label="2", value="2"),

@@ -82,8 +82,13 @@ def app():
             me.text(f"v{state.version}")
 
         with mex.header_section():
-          mex.button_toggle(
-            labels=["Prompt", "Eval"], selected=state.mode, on_click=on_click_mode_toggle
+          me.button_toggle(
+            value=state.mode,
+            buttons=[
+              me.ButtonToggleButton(label="Prompt", value="Prompt"),
+              me.ButtonToggleButton(label="Eval", value="Eval"),
+            ],
+            on_change=on_mode_toggle,
           )
 
     if state.mode == "Prompt":
@@ -91,34 +96,31 @@ def app():
       with me.box(
         style=me.Style(padding=me.Padding(left=15, top=15, bottom=15), overflow_y="scroll")
       ):
-        with mex.expanable_card(
-          title="System Instructions",
-          expanded=state.system_prompt_card_expanded,
-          on_click_header=on_click_system_instructions_header,
-        ):
-          me.native_textarea(
-            autosize=True,
-            min_rows=2,
-            placeholder="Optional tone and style instructions for the model",
-            value=state.system_instructions,
-            on_blur=handlers.on_update_input,
-            style=_STYLE_INVISIBLE_TEXTAREA,
-            key="system_instructions",
-          )
+        with me.accordion():
+          with me.expansion_panel(title="System Instructions", style=me.Style(background=me.theme_var('surface-container-lowest'))):
+            me.native_textarea(
+              autosize=True,
+              min_rows=2,
+              placeholder="Optional tone and style instructions for the model",
+              value=state.system_instructions,
+              on_blur=handlers.on_update_input,
+              style=_STYLE_INVISIBLE_TEXTAREA,
+              key="system_instructions",
+            )
 
-        with mex.card(title="Prompt"):
-          me.native_textarea(
-            autosize=True,
-            min_rows=2,
-            placeholder="Enter your prompt",
-            value=state.prompt,
-            on_blur=on_update_prompt,
-            style=_STYLE_INVISIBLE_TEXTAREA,
-            key="prompt",
-          )
+          with me.expansion_panel(title="Prompt", expanded=True, style=me.Style(background=me.theme_var('surface-container-lowest'))):
+            me.native_textarea(
+              autosize=True,
+              min_rows=2,
+              placeholder="Enter your prompt",
+              value=state.prompt,
+              on_blur=on_update_prompt,
+              style=_STYLE_INVISIBLE_TEXTAREA,
+              key="prompt",
+            )
 
         with me.box(
-          style=me.Style(align_items="center", display="flex", justify_content="space-between")
+          style=me.Style(align_items="center", display="flex", justify_content="space-between", margin=me.Margin(top=15))
         ):
           with me.content_button(
             type="flat",
@@ -141,11 +143,15 @@ def app():
 
       with me.box(style=me.Style(padding=me.Padding.all(15), overflow_y="scroll")):
         if state.response:
-          with mex.card(title="Response", style=me.Style(overflow_y="hidden")):
-            mex.markdown(state.response, has_copy_to_clipboard=True)
+          with me.card(appearance="raised", style=me.Style(background=me.theme_var('surface-container-lowest'))):
+            me.card_header(title="Response")
+            with me.card_content():
+              mex.markdown(state.response, has_copy_to_clipboard=True)
         else:
-          with mex.card(title="Prompt Tuner Instructions"):
-            mex.markdown(_INSTRUCTIONS, has_copy_to_clipboard=True)
+          with me.card(appearance="raised", style=me.Style(background=me.theme_var('surface-container-lowest'))):
+            me.card_header(title="Prompt Tuner Instructions")
+            with me.card_content():
+              mex.markdown(_INSTRUCTIONS, has_copy_to_clipboard=True)
     else:
       # Render eval page
       with me.box(style=me.Style(grid_column="1 / -2", overflow_y="scroll")):
@@ -276,10 +282,10 @@ def on_update_prompt(e: me.InputBlurEvent):
       state.prompt_variables[variable_name] = ""
 
 
-def on_click_mode_toggle(e: me.ClickEvent):
+def on_mode_toggle(e: me.ButtonToggleChangeEvent):
   """Toggle between Prompt and Eval modes."""
   state = me.state(State)
-  state.mode = "Eval" if state.mode == "Prompt" else "Prompt"
+  state.mode = e.value
 
 
 def on_select_rating(e: me.SelectSelectionChangeEvent):

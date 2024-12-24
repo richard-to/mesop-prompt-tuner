@@ -17,17 +17,6 @@ def prompt_variables():
     if not state.prompt_variables:
       me.text("No variables defined in prompt.", style=me.Style(width=DIALOG_INPUT_WIDTH))
     else:
-      with me.box(
-        style=me.Style(display="flex", justify_content="end", margin=me.Margin(bottom=15))
-      ):
-        mex.button(
-          "Generate",
-          on_click=on_click_generate_variables,
-          style=me.Style(
-            background=me.theme_var("secondary-container"),
-            color=me.theme_var("on-secondary-container"),
-          ),
-        )
       variable_names = set(parse_variables(state.prompt))
       with me.box(style=me.Style(display="flex", flex_direction="column")):
         for name, value in state.prompt_variables.items():

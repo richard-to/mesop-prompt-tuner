@@ -1,3 +1,4 @@
+from collections.abc import Collection
 import json
 import os
 
@@ -60,7 +61,7 @@ def generate_prompt(task_description: str, model_name: str, temperature: float) 
 
 
 def generate_variables(
-  prompt: str, variable_names: list[str], model_name: str, temperature: float
+  prompt: str, variable_names: Collection[str], model_name: str, temperature: float
 ) -> dict[str, str]:
   model = _make_model(model_name, temperature=temperature)
   output = (

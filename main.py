@@ -94,10 +94,13 @@ def app():
     if state.mode == "Prompt":
       # Render prompt creation page
       with me.box(
-        style=me.Style(padding=me.Padding(left=15, top=15, bottom=15), overflow_y="scroll")
+        style=me.Style(padding=me.Padding(left=15, top=15, bottom=15, right=2), overflow_y="scroll")
       ):
         with me.accordion():
-          with me.expansion_panel(title="System Instructions", style=me.Style(background=me.theme_var('surface-container-lowest'))):
+          with me.expansion_panel(
+            title="System Instructions",
+            style=me.Style(background=me.theme_var("surface-container-lowest")),
+          ):
             me.native_textarea(
               autosize=True,
               min_rows=2,
@@ -108,7 +111,11 @@ def app():
               key="system_instructions",
             )
 
-          with me.expansion_panel(title="Prompt", expanded=True, style=me.Style(background=me.theme_var('surface-container-lowest'))):
+          with me.expansion_panel(
+            title="Prompt",
+            expanded=True,
+            style=me.Style(background=me.theme_var("surface-container-lowest")),
+          ):
             me.native_textarea(
               autosize=True,
               min_rows=2,
@@ -120,7 +127,12 @@ def app():
             )
 
         with me.box(
-          style=me.Style(align_items="center", display="flex", justify_content="space-between", margin=me.Margin(top=15))
+          style=me.Style(
+            align_items="center",
+            display="flex",
+            justify_content="space-between",
+            margin=me.Margin(top=15),
+          )
         ):
           with me.content_button(
             type="flat",
@@ -130,25 +142,19 @@ def app():
           ):
             with me.tooltip(message="Run prompt"):
               me.icon("play_arrow")
-          mex.button(
-            "Generate prompt",
-            disabled=bool(state.prompt),
-            style=me.Style(
-              background=me.theme_var("secondary-container"),
-              color=me.theme_var("on-secondary-container"),
-            ),
-            on_click=handlers.on_open_dialog,
-            key="dialog_show_generate_prompt",
-          )
 
       with me.box(style=me.Style(padding=me.Padding.all(15), overflow_y="scroll")):
         if state.response:
-          with me.card(appearance="raised", style=me.Style(background=me.theme_var('surface-container-lowest'))):
+          with me.card(
+            appearance="raised", style=me.Style(background=me.theme_var("surface-container-lowest"))
+          ):
             me.card_header(title="Response")
             with me.card_content():
               mex.markdown(state.response, has_copy_to_clipboard=True)
         else:
-          with me.card(appearance="raised", style=me.Style(background=me.theme_var('surface-container-lowest'))):
+          with me.card(
+            appearance="raised", style=me.Style(background=me.theme_var("surface-container-lowest"))
+          ):
             me.card_header(title="Prompt Tuner Instructions")
             with me.card_content():
               mex.markdown(_INSTRUCTIONS, has_copy_to_clipboard=True)

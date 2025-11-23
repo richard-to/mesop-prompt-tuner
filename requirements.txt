@@ -1,3 +1,3 @@
 gunicorn
-mesop==0.14.1
+mesop
 google-generativeai

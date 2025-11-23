@@ -18,8 +18,8 @@ def model_settings():
         label="Model",
         key="model",
         options=[
-          me.SelectOption(label="Gemini 1.5 Flash", value="gemini-1.5-flash"),
-          me.SelectOption(label="Gemini 1.5 Pro", value="gemini-1.5-pro"),
+          me.SelectOption(label="Gemini Flash Latest", value="gemini-flash-latest"),
+          me.SelectOption(label="Gemini Flash-Lite Latest", value="gemini-flash-lite-latest"),
         ],
         value=state.model,
         style=me.Style(width=DIALOG_INPUT_WIDTH),

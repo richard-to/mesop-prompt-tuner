@@ -34,7 +34,7 @@ class State:
   add_row_prompt_variables: dict[str, str]
 
   # Model info
-  model: str = "gemini-1.5-flash"
+  model: str = "gemini-flash-latest"
   model_temperature: float = 1.0
   model_temperature_input: str = "1.0"
 
